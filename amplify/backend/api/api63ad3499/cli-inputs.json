@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/items": {
+      "name": "/items",
+      "lambdaFunction": "admingameapp35f72b97",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

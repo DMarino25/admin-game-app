@@ -1,0 +1,26 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-admingameapp-dev-a19e5-authRole",
+      "UnauthRoleArn": "arn:aws:iam::476114115971:role/amplify-admingameapp-dev-a19e5-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::476114115971:role/amplify-admingameapp-dev-a19e5-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-admingameapp-dev-a19e5-deployment",
+      "UnauthRoleName": "amplify-admingameapp-dev-a19e5-unauthRole",
+      "StackName": "amplify-admingameapp-dev-a19e5",
+      "StackId": "arn:aws:cloudformation:us-east-1:476114115971:stack/amplify-admingameapp-dev-a19e5/784f0310-9549-11ef-9d95-0ef944abf52d",
+      "AmplifyAppId": "d2eg31jpqhz9da"
+    },
+    "categories": {
+      "function": {
+        "admingameapp35f72b97": {
+          "deploymentBucketName": "amplify-admingameapp-dev-a19e5-deployment",
+          "s3Key": "amplify-builds/admingameapp35f72b97-6271476b684c734b746b-build.zip"
+        }
+      },
+      "api": {
+        "api63ad3499": {}
+      }
+    }
+  }
+}

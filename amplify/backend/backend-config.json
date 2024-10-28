@@ -1,0 +1,43 @@
+{
+  "api": {
+    "api63ad3499": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "admingameapp35f72b97"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "function": {
+    "admingameapp35f72b97": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_admingameapp35f72b97_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "admingameapp35f72b97"
+        }
+      ]
+    },
+    "AMPLIFY_function_admingameapp35f72b97_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "admingameapp35f72b97"
+        }
+      ]
+    }
+  }
+}

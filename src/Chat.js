@@ -14,19 +14,13 @@ import Login from './Login';
 import Navigation from './Navigations'
 import BannedUsers from './BannedUsers'
 import ReportMessage from './ReportMessages'
-import Chat from './Chat'
 
-function App() {
+function Chat() {
  return (
- 
-    <Routes>
-      <Route path="/" element={<Login/>} />
-      <Route path="/all-users" element={<><Navigation /><AllUsers /> </>} />
-      <Route path="/all-users/chat" element={<Chat />} />
-      <Route path="/banned-users" element={<><Navigation /><BannedUsers /> </>} />
-      <Route path="/reported-messages" element={<><Navigation /><ReportMessage /> </>} />
-    </Routes>
+    <button id="chat" className='btn btn-primary me-2' >
+    <i class="bi bi-chat"></i>
+  </button>
  );
 }
 
-export default App;
+export default Chat;

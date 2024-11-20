@@ -1,0 +1,98 @@
+
+#login-screen {
+    display: flex;
+    max-width: 400px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+
+}
+
+
+#login-screen input, #login-screen button {
+    margin: 10px 0; 
+    padding: 8px; 
+    font-size: 16px;
+    width: 100%; 
+}
+
+
+#login-screen .btn-primary {
+    background-color: #4CAF50; 
+    border-color: #45a049; 
+}
+
+
+#login-screen .btn-primary:focus {
+    box-shadow: 0 0 5px rgba(0, 128, 0, 0.5); 
+    outline: none;
+}
+
+#navigation {
+    background-color: #f4f4f4;
+}
+.logo-rounded {
+    border-radius: 50%;
+    width: 50px;       
+    height: 50px;      
+    object-fit: cover; 
+    margin-right: px;
+    animation: none;   
+  }
+
+
+#login-screen input::placeholder {
+    color: #bbb; 
+    font-style: italic; 
+}
+#buttonNav{
+    color: #333;
+    background-color: #fff;
+    border-color:#333;
+}
+#buttonNav:hover{
+    color: #fff;
+    background-color: #00b3db;
+    border-color: #285e8e
+}
+
+#butClose{
+        color: #333;
+    background-color: #fff;
+    border-color:#333;
+
+}
+#butClose:hover{
+    color: #ec5353;
+    background-color: #333;
+    border-color: #285e8e
+}
+#perma{
+    background-color: #ec5353;
+    border-color: #ec5353
+}
+
+#chat{
+    background-color: #308446;
+    border-color: #308446
+}
+.app-body {
+    display: flex; 
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; 
+    height: 100vh;
+    margin: 0;   
+    background: #87CEEB; 
+    font-family: Arial, sans-serif; 
+}
+.logTitle{
+    font-size: 24px; 
+    font-weight: bold; 
+    color: #333; 
+    text-align: center; 
+}

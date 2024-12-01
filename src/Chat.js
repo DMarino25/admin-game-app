@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   getFirestore,
   collection,
@@ -12,8 +12,8 @@ import {
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { app } from "./firebase";
+import Navbar from "./Navigations"; // Import Navbar component
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/styles.css";
@@ -27,57 +27,56 @@ function Chat() {
   const [peerUserPhotoUrl, setPeerUserPhotoUrl] = useState("");
   const scrollRef = useRef(null);
   const db = getFirestore(app);
-  const { user, peerUserId } = useUser();
-  const currentUserId = user ? user.uid : null;
+  const { userId, peerUserId } = useUser();
 
-  // Fetch user photo URLs
+  const navigate = useNavigate();
+
+  // Fetch user photo URLs dynamically
   useEffect(() => {
-    if (!currentUserId || !peerUserId) return;
+    if (!userId || !peerUserId) return;
 
     const fetchUserPhotos = async () => {
-      const currentUserRef = doc(db, "users", currentUserId);
-      const peerUserRef = doc(db, "users", peerUserId);
-
       try {
-        const currentUserDoc = await getDoc(currentUserRef);
-        const peerUserDoc = await getDoc(peerUserRef);
-        setCurrentUserPhotoUrl(currentUserDoc.data()?.photoUrl || "");
-        setPeerUserPhotoUrl(peerUserDoc.data()?.photoUrl || "");
+        const currentUserDoc = await getDoc(doc(db, "users", userId));
+        const peerUserDoc = await getDoc(doc(db, "users", peerUserId));
+
+        setCurrentUserPhotoUrl(currentUserDoc.data()?.photoUrl || "default-current-avatar-url");
+        setPeerUserPhotoUrl(peerUserDoc.data()?.photoUrl || "default-peer-avatar-url");
       } catch (error) {
         console.error("Error fetching user photos:", error);
       }
     };
 
     fetchUserPhotos();
-  }, [currentUserId, peerUserId, db]);
+  }, [userId, peerUserId, db]);
 
   // Determine chat ID and fetch messages
   useEffect(() => {
-    if (!currentUserId || !peerUserId) return;
+    if (!userId || !peerUserId) return;
 
     const determineChatId = async () => {
-      const possibleChatId1 = `${currentUserId}_${peerUserId}`;
-      const possibleChatId2 = `${peerUserId}_${currentUserId}`;
+      const possibleChatId1 = `${userId}_${peerUserId}`;
+      const possibleChatId2 = `${peerUserId}_${userId}`;
 
-      const chatRef1 = doc(db, "messages", possibleChatId1);
-      const chatRef2 = doc(db, "messages", possibleChatId2);
+      try {
+        const chatDoc1 = await getDoc(doc(db, "messages", possibleChatId1));
+        const chatDoc2 = await getDoc(doc(db, "messages", possibleChatId2));
 
-      const chatDoc1 = await getDoc(chatRef1);
-      const chatDoc2 = await getDoc(chatRef2);
-
-      if (chatDoc1.exists()) {
-        setChatId(possibleChatId1);
-        return possibleChatId1;
-      } else if (chatDoc2.exists()) {
-        setChatId(possibleChatId2);
-        return possibleChatId2;
-      } else {
-        const newChatRef = doc(db, "messages", possibleChatId1);
-        await setDoc(newChatRef, {
-          participants: [currentUserId, peerUserId],
-        });
-        setChatId(possibleChatId1);
-        return possibleChatId1;
+        if (chatDoc1.exists()) {
+          setChatId(possibleChatId1);
+          return possibleChatId1;
+        } else if (chatDoc2.exists()) {
+          setChatId(possibleChatId2);
+          return possibleChatId2;
+        } else {
+          await setDoc(doc(db, "messages", possibleChatId1), {
+            participants: [userId, peerUserId],
+          });
+          setChatId(possibleChatId1);
+          return possibleChatId1;
+        }
+      } catch (error) {
+        console.error("Error determining chat ID:", error);
       }
     };
 
@@ -98,7 +97,7 @@ function Chat() {
     };
 
     fetchMessages();
-  }, [currentUserId, peerUserId, db]);
+  }, [userId, peerUserId, db]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -107,13 +106,13 @@ function Chat() {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !currentUserId || !peerUserId || !chatId) return;
+    if (!newMessage.trim() || !userId || !peerUserId || !chatId) return;
 
     try {
       const chatRef = collection(db, "messages", chatId, "chat");
       await addDoc(chatRef, {
         messageText: newMessage.trim(),
-        senderId: currentUserId,
+        senderId: userId,
         timestamp: serverTimestamp(),
       });
 
@@ -124,83 +123,109 @@ function Chat() {
   };
 
   return (
-    <section>
-      <div className="container py-5">
-        <div className="row d-flex justify-content-center">
-          <div className="col-md-10 col-lg-8 col-xl-6">
-            <div className="card" id="chat2">
-              <div className="card-header d-flex justify-content-between align-items-center p-3">
-                <h5 className="mb-0">Chat {peerUserId}</h5>
-              </div>
+    <>
+      <Navbar /> {/* Include the navbar */}
 
-              <div
-                className="card-body"
-                ref={scrollRef}
-                style={{
-                  position: "relative",
-                  height: "400px",
-                  overflowY: "scroll",
-                  padding: "10px",
-                }}
-              >
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`d-flex flex-row ${
-                      msg.senderId === currentUserId
-                        ? "justify-content-end mb-4 pt-1"
-                        : "justify-content-start mb-4"
-                    }`}
+      <section>
+        <div className="container py-5">
+          <div className="row d-flex justify-content-center">
+            <div className="col-md-10 col-lg-8 col-xl-6">
+              <div className="card" id="chat2">
+                <div className="card-header d-flex justify-content-between align-items-center p-3">
+                  <h5 className="mb-0">Chat with {peerUserId}</h5>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => navigate("/all-users")}
                   >
-                    {msg.senderId !== currentUserId && (
-                      <img
-                        src={peerUserPhotoUrl || "https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"}
-                        alt="Peer Avatar"
-                        style={{ width: "45px", height: "100%" }}
-                      />
-                    )}
-                    <div>
-                      <p
-                        className={`small p-2 ${
-                          msg.senderId === currentUserId
-                            ? "me-3 text-white rounded-3 bg-primary"
-                            : "ms-3 rounded-3 bg-body-tertiary"
-                        }`}
-                      >
-                        {msg.messageText}
-                      </p>
-                    </div>
-                    {msg.senderId === currentUserId && (
-                      <img
-                        src={currentUserPhotoUrl || "https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp"}
-                        alt="Your Avatar"
-                        style={{ width: "45px", height: "100%" }}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+                    Back
+                  </button>
+                </div>
 
-              <div className="card-footer text-muted d-flex justify-content-start align-items-center p-3">
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  placeholder="Type message"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") sendMessage();
+                <div
+                  className="card-body"
+                  ref={scrollRef}
+                  style={{
+                    position: "relative",
+                    height: "400px",
+                    overflowY: "scroll",
+                    padding: "10px",
                   }}
-                />
-                <button className="btn btn-primary ms-3" onClick={sendMessage}>
-                  Send
-                </button>
+                >
+                  {messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`d-flex flex-row ${
+                        msg.senderId === userId
+                          ? "justify-content-end mb-4 pt-1"
+                          : "justify-content-start mb-4"
+                      }`}
+                    >
+                      {msg.senderId !== userId && (
+                        <img
+                          src={peerUserPhotoUrl}
+                          alt="Peer Avatar"
+                          style={{
+                            width: "45px",
+                            height: "45px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      )}
+                      <div>
+                        <p
+                          className={`small p-2 ${
+                            msg.senderId === userId
+                              ? "me-3 text-white rounded-3 bg-primary"
+                              : "ms-3 rounded-3 bg-body-tertiary"
+                          }`}
+                        >
+                          {msg.messageText}
+                          <br />
+                        </p>
+                        <small className="text-muted">
+                          {msg.timestamp?.toDate()?.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }) || ""}
+                        </small>
+                      </div>
+                      {msg.senderId === userId && (
+                        <img
+                          src={currentUserPhotoUrl}
+                          alt="Your Avatar"
+                          style={{
+                            width: "45px",
+                            height: "45px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="card-footer text-muted d-flex justify-content-start align-items-center p-3">
+                  <input
+                    type="text"
+                    className="form-control form-control-lg"
+                    placeholder="Type message"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") sendMessage();
+                    }}
+                  />
+                  <button className="btn btn-primary ms-3" onClick={sendMessage}>
+                    Send
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
 

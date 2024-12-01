@@ -16,16 +16,15 @@ function Home() {
   };
 
   // Get your own userId
-  const { user, setPeerData } = useUser(); // Access the logged-in user's data
-  const currentUserId = user ? user.uid : null;
+  const { userId, setPeerData } = useUser(); // Access the logged-in user's data
 
   const handleChat = (peerUserId) => {
-    if (currentUserId) {
+    if (userId) {
       // Store the peer user's ID in the context
       setPeerData(peerUserId);
       navigate(`/all-users/chat`);
     } else {
-      console.log(peerUserId.uid)
+      console.log(peerUserId)
       alert('You must be logged in to chat');
     }
   };

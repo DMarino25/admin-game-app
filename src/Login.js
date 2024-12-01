@@ -1,5 +1,3 @@
-// src/Login.js
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
@@ -25,7 +23,7 @@ function Login() {
         const userData = querySnapshot.docs[0].data();
         if (userData.role === 'admin' && password === 'admin') {
           console.log("userData:" + userData.uid)
-          setUserData(userData); // Set user data in the context
+          setUserData(userData.uid); // Set user data in the context
           navigate('/all-users');
         } else {
           setError('Incorrect password or role');

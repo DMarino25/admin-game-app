@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from "react";
 
 // Create the context
 const UserContext = createContext();
@@ -8,21 +8,44 @@ export const useUser = () => useContext(UserContext);
 
 // Create a provider to wrap the app with
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [peerUserId, setPeerUserId] = useState(null); // Store peer user's ID
+  const [userId, setUserId] = useState(() => {
+    return localStorage.getItem("userId") || null;
+  });
 
-  // Function to set user data
-  const setUserData = (userData) => {
-    setUser(userData);
+  const [peerUserId, setPeerUserId] = useState(() => {
+    return localStorage.getItem("peerUserId") || null;
+  });
+
+  // Save userId to localStorage whenever it changes
+  useEffect(() => {
+    if (userId) {
+      localStorage.setItem("userId", userId);
+    } else {
+      localStorage.removeItem("userId");
+    }
+  }, [userId]);
+
+  // Save peerUserId to localStorage whenever it changes
+  useEffect(() => {
+    if (peerUserId) {
+      localStorage.setItem("peerUserId", peerUserId);
+    } else {
+      localStorage.removeItem("peerUserId");
+    }
+  }, [peerUserId]);
+
+  // Function to set the userId
+  const setUserData = (id) => {
+    setUserId(id);
   };
 
   // Function to set the peer user's ID for chat
   const setPeerData = (peerId) => {
-    setPeerUserId(peerId); // Store the peer user's ID (chat partner)
+    setPeerUserId(peerId);
   };
-  
+
   return (
-    <UserContext.Provider value={{ user, peerUserId, setUserData, setPeerData }}>
+    <UserContext.Provider value={{ userId, peerUserId, setUserData, setPeerData }}>
       {children}
     </UserContext.Provider>
   );

@@ -1,20 +1,16 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import './App.css';
-import { useEffect, useState } from 'react';
-import "bootstrap/dist/css/bootstrap.min.css";
-import './styles/styles.css';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getFirestore, collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { app } from './firebase'; 
-
-import { FaUser, FaCommentDots, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
+import { FaUser, FaCommentDots } from 'react-icons/fa';
+import './App.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import './styles/styles.css';
 
 function ReportMessages() {
   const db = getFirestore(app);
   const [reportsList, setReportsList] = useState([]);
 
-  const listReports = async () => {
+  const listReports = useCallback(async () => {
     try {
       const reports = collection(db, 'reports');
       const querySnapshot = await getDocs(query(reports, where("solved", "==", false)));
@@ -81,7 +77,11 @@ function ReportMessages() {
     } catch (error) {
       console.error('Error fetching reports:', error);
     }
-  };
+  }, [db]); // Include db as a dependency if necessary (optional based on how db is defined)
+
+  useEffect(() => {
+    listReports();
+  }, [listReports]); // Now this won't trigger unnecessary reruns
 
   const handleAccept = async (report) => {
     try {
@@ -127,8 +127,6 @@ function ReportMessages() {
     }
   };
   
-  
-
   const handleReject = async (report) => {
     try {
       // Delete the report from the reports collection
@@ -151,10 +149,6 @@ function ReportMessages() {
       document.body.style.margin = '';
       document.body.style.padding = '';
     };
-  }, []);
-
-  useEffect(() => {
-    listReports();
   }, []);
 
   return (

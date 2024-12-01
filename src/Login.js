@@ -1,57 +1,71 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import './App.css';
-import { useEffect, useState } from 'react';
-import "bootstrap/dist/css/bootstrap.min.css";
-import './styles/styles.css';
-import { getFirestore, collection, getDocs,query,where } from 'firebase/firestore';
-import { app } from './firebase'; 
-import AllUsers from './AllUsers';
+// src/Login.js
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { app } from './firebase';
+import { useUser } from './UserContext';  // Import the useUser hook
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
   const [error, setError] = useState('');
-  const db = getFirestore(app);
-
+  const navigate = useNavigate();
+  const { setUserData } = useUser(); // Access the context to set user data
 
   const handleLogin = async () => {
-    setError(null)
-    setSuccess(null);
-    try{
-      const users= collection(db, 'users');
-      const q = query(users, where('name', '==', username)); 
+    setError(null);
+    try {
+      const db = getFirestore(app);
+      const users = collection(db, 'users');
+      const q = query(users, where('name', '==', username));
       const querySnapshot = await getDocs(q);
 
-      if(!querySnapshot.empty){
+      if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
-        if(userData.role === "admin" && password === "admin"){
-          alert("¡Login exitoso! Bienvenido Admin");
+        if (userData.role === 'admin' && password === 'admin') {
+          console.log("userData:" + userData.uid)
+          setUserData(userData); // Set user data in the context
           navigate('/all-users');
+        } else {
+          setError('Incorrect password or role');
         }
+      } else {
+        setError('User not found');
       }
+    } catch (error) {
+      console.error('Login error', error);
+      setError('An error occurred. Please try again.');
     }
-    catch(error){
-      console.error("Inici de sessió erroni", error);
-    }
-  }
+  };
 
   return (
-    <div className='app-body'>
-    <body>
-      <h1 className='logTitle'> Admin GameApp</h1>
-    <div id="login-screen" class="container mt-5">
-      <input id="username" class="username form-control mb-2" type="text" value={username} placeholder="user name" onChange={(e) => setUsername(e.target.value)}/>
-      <input id="password" class="password form-control mb-2" type="password"  value={password} placeholder="password"onChange={(e) => setPassword(e.target.value)}/>
-      <button class= "btn btn-primary" type="button"onClick={handleLogin}>Log in</button>
-      {success && <p style={{ color: 'green', marginTop: '10px' }}>{success}</p>}
-    </div>
-    </body>
+    <div className="app-body">
+      <h1 className="logTitle">Admin GameApp</h1>
+      <div id="login-screen" className="container mt-2">
+        <input
+          id="username"
+          className="username form-control mb-2"
+          type="text"
+          value={username}
+          placeholder="username"
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          id="password"
+          className="password form-control mb-2"
+          type="password"
+          value={password}
+          placeholder="password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="btn btn-primary" type="button" onClick={handleLogin}>
+          Log in
+        </button>
+        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+      </div>
     </div>
   );
-};
+}
 
 export default Login;

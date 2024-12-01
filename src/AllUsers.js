@@ -1,18 +1,11 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import './App.css';
-import { useEffect, useState } from 'react';
-import "bootstrap/dist/css/bootstrap.min.css";
-import './styles/styles.css';
-import { getFirestore, collection, getDocs,getDoc, query,where, addDoc, doc, deleteDoc } from 'firebase/firestore';
-import { app } from './firebase'; 
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-
-
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getFirestore, collection, getDocs, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { app } from './firebase';
+import { useUser } from './UserContext';
 
 function Home() {
-
   const db = getFirestore(app);
   const navigate = useNavigate();
   const [usersList, setUsers] = useState([]);
@@ -21,19 +14,31 @@ function Home() {
   const toggleAccordion = (userId) => {
     setExpandedUser(expandedUser === userId ? null : userId);
   };
-  const handleChat= async(userId) =>{
-    navigate('/all-users/chat')
-  }
-  const handlePerma= async(userId) => {
 
-    try{
-      const userRef= doc(db, 'users',userId);
+  // Get your own userId
+  const { user, setPeerData } = useUser(); // Access the logged-in user's data
+  const currentUserId = user ? user.uid : null;
+
+  const handleChat = (peerUserId) => {
+    if (currentUserId) {
+      // Store the peer user's ID in the context
+      setPeerData(peerUserId);
+      navigate(`/all-users/chat`);
+    } else {
+      console.log(peerUserId.uid)
+      alert('You must be logged in to chat');
+    }
+  };
+
+  const handlePerma = async (userId) => {
+    try {
+      const userRef = doc(db, 'users', userId);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
 
-        await addDoc(collection(db, 'bannedUsers'),{
+        await addDoc(collection(db, 'bannedUsers'), {
           userId,
           email: userData.email,
           name: userData.name,
@@ -41,30 +46,24 @@ function Home() {
 
         await deleteDoc(userRef);
         setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-
       }
-    }
-    catch(error){
+    } catch (error) {
       console.error("Error al banjear l'usuari", error);
     }
+  };
 
-  }
-
-
-  
-  const listUsers = async() =>{
-    try{
-      const users= collection(db, 'users');
+  const listUsers = async () => {
+    try {
+      const users = collection(db, 'users');
       const querySnapshot = await getDocs(users);
-      const usersList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUsers(usersList); 
+      const usersList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setUsers(usersList);
+    } catch (error) {
+      console.error("Error al obtenir els usuaris", error);
     }
-    catch(error){
-      console.error("Inici de sessió erroni", error);
-    }
-  }
-  useEffect(() => {
+  };
 
+  useEffect(() => {
     document.body.style.backgroundColor = '#BEBEBE';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
@@ -74,9 +73,11 @@ function Home() {
       document.body.style.padding = '';
     };
   }, []);
+
   useEffect(() => {
     listUsers();
   }, []);
+
   return (
     <div id="usuaris" className="container mt-4">
       <h1 className="mb-4">Usuaris</h1>
@@ -85,21 +86,29 @@ function Home() {
           <li key={user.id} className="list-group-item">
             <div className="d-flex justify-content-between align-items-center">
               <span>{user.name}</span>
-              <div className='d-flex'>
-              <button id="chat" className='btn btn-primary me-2' onClick={() => handleChat(user.id)}>
-                <i class="bi bi-chat"></i>
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => toggleAccordion(user.id)}
-              >
-                {expandedUser === user.id ? 'Ocultar' : 'Opcions de restriccions'}
-              </button>
-              <button id="perma" className='btn btn-primary ms-2'onClick={() => handlePerma(user.id)} >
-                PermaBan
-              </button>
+              <div className="d-flex">
+                <button
+                  id="chat"
+                  className="btn btn-primary me-2"
+                  onClick={() => handleChat(user.id)} // Call handleChat with the userId
+                >
+                  <i className="bi bi-chat"></i>
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => toggleAccordion(user.id)}
+                >
+                  {expandedUser === user.id ? 'Ocultar' : 'Opcions de restriccions'}
+                </button>
+                <button
+                  id="perma"
+                  className="btn btn-primary ms-2"
+                  onClick={() => handlePerma(user.id)}
+                >
+                  PermaBan
+                </button>
+              </div>
             </div>
-          </div>
             {expandedUser === user.id && (
               <div className="mt-3 p-3 bg-light rounded border">
                 <h6>Opcions de sanció: </h6>
@@ -122,17 +131,14 @@ function Home() {
                       Restringir forums
                     </label>
                   </li>
-                  
                 </ul>
               </div>
-              
             )}
-            
           </li>
         ))}
       </ul>
     </div>
   );
-  }
-  
-  export default Home;
+}
+
+export default Home;

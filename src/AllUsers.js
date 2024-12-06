@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getFirestore, collection, getDocs, doc, getDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, doc, getDoc, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { app } from './firebase';
 import { useUser } from './UserContext';
@@ -29,6 +29,54 @@ function Home() {
     }
   };
 
+  const handleMiniBans = async (userId) =>{
+    try{
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+ 
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+          user.id === userId
+          ?{
+            ...user,
+              noGames: userData.noGames || false,
+              noFav: userData.noFav || false,
+              noFor: userData.noFor || false,
+
+          }
+          : user
+      )
+    ); 
+      
+    }
+  }
+    catch (error) {
+      console.error("Error al banejear l'usuari", error);
+    }
+  };
+  const handleCheckbox = async (userId, field) =>{
+    const userRef = doc(db, 'users', userId);
+    try{
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, [field]: !user[field] } : user
+        )
+      );
+  
+      const updatedUser = usersList.find((user) => user.id === userId);
+      await updateDoc(userRef, { [field]: !updatedUser[field] });
+
+    }
+    catch (error) {
+      console.error("Error al banejear l'usuari", error);
+    }
+  };
+  
+
   const handlePerma = async (userId) => {
     try {
       const userRef = doc(db, 'users', userId);
@@ -47,7 +95,7 @@ function Home() {
         setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
       }
     } catch (error) {
-      console.error("Error al banjear l'usuari", error);
+      console.error("Error al banejear l'usuari", error);
     }
   };
 
@@ -95,7 +143,9 @@ function Home() {
                 </button>
                 <button
                   className="btn btn-primary"
-                  onClick={() => toggleAccordion(user.id)}
+                  onClick={() => {toggleAccordion(user.id);
+                    if(expandedUser !== user.id)handleMiniBans(user.id);
+                  }}
                 >
                   {expandedUser === user.id ? 'Ocultar' : 'Opcions de restriccions'}
                 </button>
@@ -113,19 +163,26 @@ function Home() {
                 <h6>Opcions de sanció: </h6>
                 <ul>
                   <li>
-                    <input type="checkbox" id={`favorites-${user.id}`} />
+                    <input type="checkbox" id={`favorites-${user.id}`}
+                    checked={user.noGames || false} 
+                    onChange={()=> handleCheckbox(user.id, 'noGames')}
+                    />
                     <label htmlFor={`favorites-${user.id}`} className="ms-2">
                       Restringir videojocs
                     </label>
                   </li>
                   <li>
-                    <input type="checkbox" id={`comments-${user.id}`} />
+                    <input type="checkbox" id={`comments-${user.id}`} 
+                      checked={user.noFav || false} 
+                      onChange={()=> handleCheckbox(user.id, 'noFav')}/>
                     <label htmlFor={`comments-${user.id}`} className="ms-2">
                       Restringir favorits
                     </label>
                   </li>
                   <li>
-                    <input type="checkbox" id={`other-${user.id}`} />
+                    <input type="checkbox" id={`other-${user.id}`}
+                     checked={user.noFor || false} 
+                     onChange={()=> handleCheckbox(user.id, 'noFor')} />
                     <label htmlFor={`other-${user.id}`} className="ms-2">
                       Restringir forums
                     </label>

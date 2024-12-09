@@ -11,6 +11,8 @@ function Feedback() {
     const db = getFirestore(app);
     const auth = getAuth(app);
     const [usersList, setUsers] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1); 
+    const itemsPerPage = 2;
 
     const listUsers = async() =>{
     try{
@@ -54,12 +56,17 @@ function Feedback() {
     useEffect(() => {
     listUsers();
     }, []);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentUsers = usersList.slice(indexOfFirstItem, indexOfLastItem);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
         <div id='usuaris'div className="container mt-4">
         <h1 className="mb-4">Feedback dels usuaris</h1>
         <ul className="list-group">
-        {usersList.map(user => (
+        {currentUsers.map(user => (
             <li key={user.id} className="list-group-item">
                 <div>  
                     <h3 style={{display :'inline-block', marginBottom: '20px'}}>
@@ -76,6 +83,21 @@ function Feedback() {
         ))}
         
         </ul>
+        <nav>
+                <ul className="pagination">
+                    {Array.from({ length: Math.ceil(usersList.length / itemsPerPage) }, (_, index) => (
+                        <li
+                            key={index + 1}
+                            className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <span className="page-link" onClick={() => paginate(index + 1)}>
+                                {index + 1}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
     </div>
     );
 }

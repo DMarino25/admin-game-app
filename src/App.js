@@ -15,6 +15,7 @@ import Navigation from './Navigations'
 import BannedUsers from './BannedUsers'
 import ReportMessage from './ReportMessages'
 import Chat from './Chat'
+import Feedback from './Feedbacks'
 
 function App() {
  return (
@@ -25,6 +26,7 @@ function App() {
       <Route path="/all-users/chat" element={<Chat />} />
       <Route path="/banned-users" element={<><Navigation /><BannedUsers /> </>} />
       <Route path="/reported-messages" element={<><Navigation /><ReportMessage /> </>} />
+      <Route path="/feedback" element={<><Navigation /><Feedback /> </>} />
     </Routes>
  );
 }

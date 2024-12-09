@@ -28,6 +28,9 @@ function Navigation(){
     const handleProfiles= () => {
         navigate('/banned-users'); 
     };
+    const handleFB= () => {
+      navigate('/feedback'); 
+  };
 
       return (
         
@@ -43,6 +46,9 @@ function Navigation(){
             </button>
             <button id= "buttonNav" button className="button btn-info ms-4 rounded" type="button" onClick={handleRM} data-bs-toggle="collapse" data-bs-target="#navbarNav">
              Missatges reportats
+            </button>
+            <button id= "buttonNav" button className="button btn-info ms-4 rounded" type="button" onClick={handleFB} data-bs-toggle="collapse" data-bs-target="#navbarNav">
+             Feedback
             </button>
               <button id ="butClose" button className="btn btn-info ms-auto" onClick={handleLogout}>
                 Tanca Sessió

@@ -25,29 +25,31 @@ function Chat() {
   const [chatId, setChatId] = useState(null);
   const [currentUserPhotoUrl, setCurrentUserPhotoUrl] = useState("");
   const [peerUserPhotoUrl, setPeerUserPhotoUrl] = useState("");
+  const [peerUserName, setPeerUserName] = useState("");
   const scrollRef = useRef(null);
   const db = getFirestore(app);
   const { userId, peerUserId } = useUser();
 
   const navigate = useNavigate();
 
-  // Fetch user photo URLs dynamically
+  // Fetch user photo URLs and peer user's name
   useEffect(() => {
     if (!userId || !peerUserId) return;
 
-    const fetchUserPhotos = async () => {
+    const fetchUserDetails = async () => {
       try {
         const currentUserDoc = await getDoc(doc(db, "users", userId));
         const peerUserDoc = await getDoc(doc(db, "users", peerUserId));
 
         setCurrentUserPhotoUrl(currentUserDoc.data()?.photoUrl || "default-current-avatar-url");
         setPeerUserPhotoUrl(peerUserDoc.data()?.photoUrl || "default-peer-avatar-url");
+        setPeerUserName(peerUserDoc.data()?.name || "Unknown User");
       } catch (error) {
-        console.error("Error fetching user photos:", error);
+        console.error("Error fetching user details:", error);
       }
     };
 
-    fetchUserPhotos();
+    fetchUserDetails();
   }, [userId, peerUserId, db]);
 
   // Determine chat ID and fetch messages
@@ -113,7 +115,7 @@ function Chat() {
       await addDoc(chatRef, {
         messageText: newMessage.trim(),
         senderId: userId,
-        timestamp: serverTimestamp(),
+        timestamp: Date.now(), //change to serverTimestamp()
       });
 
       setNewMessage("");
@@ -132,7 +134,7 @@ function Chat() {
             <div className="col-md-10 col-lg-8 col-xl-6">
               <div className="card" id="chat2">
                 <div className="card-header d-flex justify-content-between align-items-center p-3">
-                  <h5 className="mb-0">Chat with {peerUserId}</h5>
+                  <h5 className="mb-0">{peerUserName}</h5>
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
@@ -184,10 +186,10 @@ function Chat() {
                           <br />
                         </p>
                         <small className="text-muted">
-                          {msg.timestamp?.toDate()?.toLocaleTimeString([], {
+                          {/*msg.timestamp?.toDate()?.toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
-                          }) || ""}
+                          }) || ""*/}
                         </small>
                       </div>
                       {msg.senderId === userId && (

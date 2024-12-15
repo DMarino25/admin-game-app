@@ -9,10 +9,21 @@ function Home() {
   const db = getFirestore(app);
   const navigate = useNavigate();
   const [usersList, setUsers] = useState([]);
+  const [userInfo, setUserInfo] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [expandedUser, setExpandedUser] = useState(null);
+  const [expandedUser2, setExpandedUser2] = useState(null);
+  const [expandedUser3, setExpandedUser3] = useState(null);
+
 
   const toggleAccordion = (userId) => {
     setExpandedUser(expandedUser === userId ? null : userId);
+  };
+  const toggleAccordion2 = (userId) => {
+    setExpandedUser2(expandedUser2 === userId ? null : userId);
+  };
+  const toggleAccordion3 = (userId) => {
+    setExpandedUser3(expandedUser3 === userId ? null : userId);
   };
 
   // Get your own userId
@@ -29,6 +40,40 @@ function Home() {
     }
   };
 
+  const handleInfo = async(userId) => {
+    try{
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()){
+        const userData = userSnap.data();
+        setUserInfo ((prevInfo) => ({
+          ...prevInfo,
+          [userId]:{email:userData.email || 'Correu no trobat', photoUrl:userData.photoUrl || '',gameFav:userData.gameFav||'Joc més jugat no trobat',gameFavImg:userData.gameFavImg||'', description: userData.description || "Descripció no trobada"},
+      }));      
+    }
+  }
+    catch (error) {
+      console.error("Error obtenir informació", error);
+    }
+  };
+  const handleFavs = async(userId) => {
+    try{
+      const userRef = doc(db, 'users', userId);
+      const favRef = collection(userRef, 'favorits');
+      const favSnap = await getDocs(favRef);
+
+      const favoriteTitles = favSnap.docs.map((doc) => doc.data().title);
+      setFavorites((prevFavorites) => ({
+        ...prevFavorites,
+        [userId]: favoriteTitles,
+      }));
+  }
+    catch (error) {
+      console.error("Error obtenir informació", error);
+    }
+  };
+
   const handleMiniBans = async (userId) =>{
     try{
       const userRef = doc(db, 'users', userId);
@@ -36,7 +81,7 @@ function Home() {
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
- 
+        
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
           user.id === userId
@@ -134,12 +179,29 @@ function Home() {
             <div className="d-flex justify-content-between align-items-center">
               <span>{user.name}</span>
               <div className="d-flex">
+                <button id="info" className="btn btn-primary rounded-circle me-2" onClick={() => {toggleAccordion2(user.id);
+                    if(expandedUser2 !== user.id)handleInfo(user.id);
+                  }}>
+                    {expandedUser2 === user.id ? 'Ocultar': <i className="bi bi-info-circle"></i>}
+                  
+                  </button>
                 <button
                   id="chat"
                   className="btn btn-primary me-2"
                   onClick={() => handleChat(user.id)} // Call handleChat with the userId
                 >
                   <i className="bi bi-chat"></i>
+                </button>
+                <button
+                  id="fav"
+                  className="btn btn-primary me-2"
+                  onClick={() => {toggleAccordion3(user.id);
+                    if(expandedUser3 !== user.id)handleFavs(user.id);
+                    
+                  }}
+                >
+                  {expandedUser3 === user.id ? 'Ocultar' :  <i className="bi bi-star"></i>}
+                 
                 </button>
                 <button
                   className="btn btn-primary"
@@ -158,6 +220,62 @@ function Home() {
                 </button>
               </div>
             </div>
+            {expandedUser3 === user.id && (
+              <div className="mt-3 p-3 bg-light rounded border">
+                <h6>Jocs favoritos:</h6>
+                {favorites[user.id] ? (
+                  <ul>
+                    {favorites[user.id].map((title, index) => (
+                      <li key={index}>{title}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Carregant jocs favorits...</p>
+                )}
+              </div>
+            )}
+            {expandedUser2 === user.id && (
+                      <div className= "mt-3 p-3 bg-light rounded border">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            
+                            <h6> Informació de l'usuari</h6>
+                              {userInfo[user.id]?.photoUrl ? (
+                              <img
+                                src={userInfo[user.id].photoUrl}
+                                alt={`Foto de perfil de ${user.name}`}
+                                className="rounded-circle mt-2"
+                                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                              />
+                              
+                              ): (  
+                                
+                                  <p><strong>Foto de perfil:</strong> No disponible</p>
+                                
+                              )}
+                          </div>
+                          {userInfo[user.id] ? (
+                            <ul>
+                            <li><strong>Email:</strong> {userInfo[user.id].email}</li>
+                            <li><strong>Joc més jugat:</strong> {userInfo[user.id].gameFav || 'No favoritos disponibles'}
+                            {userInfo[user.id].gameFavImg && (
+                            
+                            <img
+                              src={userInfo[user.id].gameFavImg}
+                              alt={`Joc més jugat de ${user.name}`}
+                              className="rounded-circle mt-2"
+                              style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%', marginLeft: '15px' }}
+
+                            />
+                            )}
+                            </li>
+                            
+                            <li><strong>Descripció:</strong> {userInfo[user.id].description}</li>
+                          </ul>
+                        ): (
+                          <p>Carregant informació...</p>
+                        )}
+                      </div>
+                    )}
             {expandedUser === user.id && (
               <div className="mt-3 p-3 bg-light rounded border">
                 <h6>Opcions de sanció: </h6>

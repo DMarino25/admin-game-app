@@ -75,6 +75,15 @@
     background-color: #ec5353;
     border-color: #ec5353
 }
+#info{
+    background-color: #6600A1;
+    border-color: #6600A1
+}
+
+#fav{
+    background-color: #b8b814;
+    border-color: #b8b814
+}
 
 #chat{
     background-color: #308446;

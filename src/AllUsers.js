@@ -81,6 +81,15 @@ function Home() {
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
+
+        if (userData.noGames){
+          const banEndTime = userData.noGamesEndTime;
+          const now = Date.now();
+
+          if(banEndTime && now > banEndTime){
+            await updateDoc(userRef,{noGames: false, noGamesEndTime:null });
+          }
+        }
         
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
@@ -88,9 +97,48 @@ function Home() {
           ?{
             ...user,
               noGames: userData.noGames || false,
-              noFav: userData.noFav || false,
-              noFor: userData.noFor || false,
 
+          }
+          : user
+      )
+    ); 
+
+    if (userData.noFav){
+      const banEndTime = userData.noFavEndTime;
+      const now = Date.now();
+
+      if(banEndTime && now > banEndTime){
+        await updateDoc(userRef,{noFav: false, noFavEndTime:null });
+      }
+    }
+    
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+          user.id === userId
+          ?{
+            ...user,
+              noFav: userData.noFav || false,
+
+          }
+          : user
+      )
+    ); 
+
+    if (userData.noFor){
+      const banEndTime = userData.noForEndTime;
+      const now = Date.now();
+
+      if(banEndTime && now > banEndTime){
+        await updateDoc(userRef,{noFor: false, noForEndTime:null });
+      }
+    }
+    
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+          user.id === userId
+          ?{
+            ...user,
+              noFor: userData.noFor || false,
           }
           : user
       )
@@ -105,16 +153,27 @@ function Home() {
   const handleCheckbox = async (userId, field) =>{
     const userRef = doc(db, 'users', userId);
     try{
+      const currentUser = usersList.find((user) => user.id === userId);
+      const isBanned = currentUser[field];
+      if(isBanned){
+        await updateDoc(userRef,{[field]: false, [`${field}EndTime`]:null });
+        
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === userId ? { ...user, [field]: false, [`${field}EndTime`]:null } : user
+          )
+        );
+       } else{
+        const banEndTime = Date.now() + (0.5 * 60 * 1000);
 
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === userId ? { ...user, [field]: !user[field] } : user
-        )
-      );
-  
-      const updatedUser = usersList.find((user) => user.id === userId);
-      await updateDoc(userRef, { [field]: !updatedUser[field] });
+        await updateDoc(userRef,{[field]: true, [`${field}EndTime`]:banEndTime });
 
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === userId ? { ...user, [field]: true, [`${field}EndTime`]:banEndTime } : user
+          )
+        );
+       }
     }
     catch (error) {
       console.error("Error al banejear l'usuari", error);
@@ -222,7 +281,7 @@ function Home() {
             </div>
             {expandedUser3 === user.id && (
               <div className="mt-3 p-3 bg-light rounded border">
-                <h6>Jocs favoritos:</h6>
+                <h6>Jocs favorits:</h6>
                 {favorites[user.id] ? (
                   <ul>
                     {favorites[user.id].map((title, index) => (

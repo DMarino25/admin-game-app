@@ -39,10 +39,10 @@ function Navigation(){
           <img src={logo} className="logo-rounded me-2" alt="logo" />
           <strong>  Admin GameApp</strong>
             <button id= "buttonNav" button className="button btn-info ms-4 rounded" type="button" onClick={handleM} data-bs-toggle="collapse" data-bs-target="#navbarNav">
-              Missatgeria directa
+              Usuaris
             </button>
             <button id= "buttonNav" button className="button btn-info ms-4 rounded" type="button"  onClick={handleProfiles}data-bs-toggle="collapse" data-bs-target="#navbarNav">
-              Usuaris banejats
+              Usuaris bloquejats
             </button>
             <button id= "buttonNav" button className="button btn-info ms-4 rounded" type="button" onClick={handleRM} data-bs-toggle="collapse" data-bs-target="#navbarNav">
              Missatges reportats

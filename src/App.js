@@ -18,8 +18,15 @@ import Chat from './Chat'
 import Feedback from './Feedbacks'
 
 function App() {
- return (
  
+  /*useEffect(() =>{
+    const interval = setInterval(() =>{
+      window.location.reload();
+    },10_000);
+    return () => clearInterval(interval);
+  },[]);*/
+
+  return (
     <Routes>
       <Route path="/" element={<Login/>} />
       <Route path="/all-users" element={<><Navigation /><AllUsers /> </>} />

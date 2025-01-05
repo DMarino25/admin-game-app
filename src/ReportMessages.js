@@ -153,7 +153,7 @@ function ReportMessages() {
 
   return (
     <div id="reportedComments" className="container mt-4">
-      <h1 className="mb-4 text-center">Missatges Reportats</h1>
+      <h1 id="title"  className="mb-4 text-center">Missatges Reportats</h1>
       <div className="row">
         {reportsList.map(report => (
           <div key={report.id} className="col-md-6 mb-4">

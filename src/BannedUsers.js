@@ -64,14 +64,14 @@ function BannedUsers() {
   }, []);
     return (
       <div id='usuaris'div className="container mt-4">
-      <h1 className="mb-4">Usuaris Banejats</h1>
+      <h1 id="title" className="mb-4">Usuaris Banejats</h1>
       <ul className="list-group">
         {usersList.map(user => (
           <li key={user.id} className="list-group-item d-flex justify-content-between align-items-center">
             <span>{user.name}</span>
             <div className= 'd-plex'>
             <button id="unban" className='btn btn-primary ms-auto'onClick={() => handlePerma(user.id)} >
-                Desbanejar
+                Desbloquejar
               </button>
             </div>
           </li>

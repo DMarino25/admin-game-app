@@ -8,12 +8,17 @@ import { useUser } from './UserContext';
 function Home() {
   const db = getFirestore(app);
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
   const [usersList, setUsers] = useState([]);
   const [userInfo, setUserInfo] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [expandedUser, setExpandedUser] = useState(null);
   const [expandedUser2, setExpandedUser2] = useState(null);
   const [expandedUser3, setExpandedUser3] = useState(null);
+
+
+  const [currentPage, setCurrentPage] = useState(1); 
+  const itemsPerPage = 4;
 
 
   const toggleAccordion = (userId) => {
@@ -26,12 +31,11 @@ function Home() {
     setExpandedUser3(expandedUser3 === userId ? null : userId);
   };
 
-  // Get your own userId
-  const { userId, setPeerData } = useUser(); // Access the logged-in user's data
+
+  const { userId, setPeerData } = useUser(); 
 
   const handleChat = (peerUserId) => {
     if (userId) {
-      // Store the peer user's ID in the context
       setPeerData(peerUserId);
       navigate(`/all-users/chat`);
     } else {
@@ -229,25 +233,41 @@ function Home() {
     listUsers();
   }, []);
 
+  useEffect(() => {
+          setCurrentPage(1);
+ }, [searchTerm]);
+  const filteredUsers = usersList.filter((user) =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+
+const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div id="usuaris" className="container mt-4">
-      <h1 className="mb-4">Usuaris</h1>
+      <h1 id="title" className="mb-4">Usuaris</h1>
+      <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Cerca l'usuari" aria-label="Recipient's username" aria-describedby="basic-addon2" value= {searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+        </div>
       <ul className="list-group">
-        {usersList.map((user) => (
+        {currentUsers.map((user) => (
           <li key={user.id} className="list-group-item">
-            <div className="d-flex justify-content-between align-items-center">
-              <span>{user.name}</span>
-              <div className="d-flex">
-                <button id="info" className="btn btn-primary rounded-circle me-2" onClick={() => {toggleAccordion2(user.id);
+            <div className="d-flex align-items-center">
+              <span className='text-truncate me -2 'style ={{ lineHeight: '1.2rem' }}>{user.name}</span>
+              <div className="ms-auto d-flex align-items-center">
+                <button id="info" className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center me-2" style={{ width: '2.2rem', height: '2.2rem' }} onClick={() => {toggleAccordion2(user.id);
                     if(expandedUser2 !== user.id)handleInfo(user.id);
                   }}>
-                    {expandedUser2 === user.id ? 'Ocultar': <i className="bi bi-info-circle"></i>}
+                    {<i className="bi bi-info-circle"></i>}
                   
                   </button>
                 <button
                   id="chat"
                   className="btn btn-primary me-2"
-                  onClick={() => handleChat(user.id)} // Call handleChat with the userId
+                  onClick={() => handleChat(user.id)}
                 >
                   <i className="bi bi-chat"></i>
                 </button>
@@ -263,7 +283,7 @@ function Home() {
                  
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className=" btn btn-primary btn-sm px-2 py-1"
                   onClick={() => {toggleAccordion(user.id);
                     if(expandedUser !== user.id)handleMiniBans(user.id);
                   }}
@@ -272,7 +292,7 @@ function Home() {
                 </button>
                 <button
                   id="perma"
-                  className="btn btn-primary ms-2"
+                  className="btn btn-primary ms-2 btn-sm px-2 py-1"
                   onClick={() => handlePerma(user.id)}
                 >
                   PermaBan
@@ -367,9 +387,26 @@ function Home() {
                 </ul>
               </div>
             )}
+            
           </li>
         ))}
       </ul>
+      <nav>
+          <ul className="pagination">
+              {Array.from({ length: Math.ceil(filteredUsers.length / itemsPerPage) }, (_, index) => (
+                  <li
+                      key={index + 1}
+                      className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                      style={{ cursor: 'pointer' }}
+                  >
+                      <span className="page-link" onClick={() => paginate(index + 1)}>
+                          {index + 1}
+                      </span>
+                  </li>
+              
+              ))}
+          </ul>
+      </nav>
     </div>
   );
 }

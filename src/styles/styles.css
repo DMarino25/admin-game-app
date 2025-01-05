@@ -85,6 +85,18 @@
     border-color: #b8b814
 }
 
+#title{
+    font-family: 'Poppins', sans-serif;
+    font-size: 3rem;
+    font-weight: bold;
+    color: #000; 
+    text-align: center;
+    text-transform: uppercase; 
+    letter-spacing: 3px; 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); 
+    margin: 30px auto; 
+}
+
 #chat{
     background-color: #308446;
     border-color: #308446

@@ -80,7 +80,7 @@ function Navigation() {
                 onClick={handleFB}
                 data-bs-target="#navbarNav"
               >
-                Feedback
+                Retroaccions
               </button>
             </li>
           </ul>

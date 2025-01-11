@@ -15,6 +15,8 @@ function BannedUsers() {
   const db = getFirestore(app);
   const auth = getAuth(app);
   const [usersList, setUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); 
+  const itemsPerPage = 5;
 
   const handlePerma= async(userId) => {
 
@@ -62,11 +64,23 @@ function BannedUsers() {
   useEffect(() => {
     listUsers();
   }, []);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = usersList.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const totalPages = Math.ceil(usersList.length / itemsPerPage);
+
     return (
       <div id='usuaris'div className="container mt-4">
       <h1 id="title" className="mb-4">Usuaris Bloquejats</h1>
       <ul className="list-group">
-        {usersList.map(user => (
+        {currentUsers.map(user => (
           <li key={user.id} className="list-group-item d-flex justify-content-between align-items-center">
             <span>{user.name}</span>
             <div className= 'd-plex'>
@@ -77,6 +91,17 @@ function BannedUsers() {
           </li>
         ))}
       </ul>
+      <nav className="mt-4">
+        <ul className="pagination justify-content-center">
+          {[...Array(totalPages).keys()].map((page) => (
+            <li key={page} className={`page-item ${currentPage === page + 1 ? 'active' : ''}`}>
+              <button className="page-link" onClick={() => handlePageChange(page + 1)}>
+                {page + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
     );
   }

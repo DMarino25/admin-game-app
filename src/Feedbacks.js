@@ -95,7 +95,7 @@ function Feedback() {
     return (
         
         <div id='usuaris' className="container mt-4">
-        <h1 id="title"  className="mb-4">Feedback dels usuaris</h1>
+        <h1 id="title"  className="mb-4">Retroaccions dels usuaris</h1>
         <div class="input-group mb-3">
             <input type="text" class="form-control" placeholder="Cerca l'usuari" aria-label="Recipient's username" aria-describedby="basic-addon2" value= {searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
         </div>

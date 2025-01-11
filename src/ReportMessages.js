@@ -7,6 +7,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import './styles/styles.css';
 
 function ReportMessages() {
+  const [currentPage, setCurrentPage] = useState(1); 
+  const itemsPerPage = 2;
   const db = getFirestore(app);
   const [reportsList, setReportsList] = useState([]);
 
@@ -151,11 +153,16 @@ function ReportMessages() {
     };
   }, []);
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentReports = reportsList.slice(indexOfFirstItem, indexOfLastItem);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div id="reportedComments" className="container mt-4">
       <h1 id="title"  className="mb-4 text-center">Missatges Reportats</h1>
       <div className="row">
-        {reportsList.map(report => (
+        {currentReports.map(report => (
           <div key={report.id} className="col-md-6 mb-4">
             <div className="card shadow-sm">
               <div className="card-header bg-primary text-white">
@@ -190,6 +197,22 @@ function ReportMessages() {
           </div>
         ))}
       </div>
+      <nav>
+          <ul className="pagination">
+              {Array.from({ length: Math.ceil(reportsList.length / itemsPerPage) }, (_, index) => (
+                  <li
+                      key={index + 1}
+                      className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                      style={{ cursor: 'pointer' }}
+                  >
+                      <span className="page-link" onClick={() => paginate(index + 1)}>
+                          {index + 1}
+                      </span>
+                  </li>
+              
+              ))}
+          </ul>
+      </nav>
     </div>
   );
 }

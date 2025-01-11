@@ -43,7 +43,7 @@ function Chat() {
 
         setCurrentUserPhotoUrl(currentUserDoc.data()?.photoUrl || "default-current-avatar-url");
         setPeerUserPhotoUrl(peerUserDoc.data()?.photoUrl || "default-peer-avatar-url");
-        setPeerUserName(peerUserDoc.data()?.name || "Unknown User");
+        setPeerUserName(peerUserDoc.data()?.name || "Usuari eliminat");
       } catch (error) {
         console.error("Error fetching user details:", error);
       }
@@ -115,7 +115,7 @@ function Chat() {
       await addDoc(chatRef, {
         messageText: newMessage.trim(),
         senderId: userId,
-        timestamp: Date.now(), //change to serverTimestamp()
+        timestamp: serverTimestamp(), //change to serverTimestamp()
       });
 
       setNewMessage("");

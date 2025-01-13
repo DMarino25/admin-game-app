@@ -47,20 +47,20 @@ function ReportMessages() {
               const commentRef = doc(commentsCollection, report.commentId);
               const commentSnap = await getDoc(commentRef);
               if (commentSnap.exists()) {
-                originalCommentText = commentSnap.data().commentText || 'Comentario original no disponible';
+                originalCommentText = commentSnap.data().commentText || 'Comentari original no disponible';
               }
 
               const replyRef = doc(commentsCollection, report.commentId, 'replies', report.replyId);
               const replySnap = await getDoc(replyRef);
               if (replySnap.exists()) {
-                textContent = replySnap.data().replyText || 'Contenido de respuesta no disponible';
+                textContent = replySnap.data().replyText || 'Contingut de resposta no disponible';
                 break;
               }
             } else {
               const commentRef = doc(commentsCollection, report.commentId);
               const commentSnap = await getDoc(commentRef);
               if (commentSnap.exists()) {
-                textContent = commentSnap.data().commentText || 'Contenido no disponible';
+                textContent = commentSnap.data().commentText || 'Contingut no disponible';
                 break;
               }
             }

@@ -115,7 +115,7 @@ function Chat() {
       await addDoc(chatRef, {
         messageText: newMessage.trim(),
         senderId: userId,
-        timestamp: serverTimestamp(), //change to serverTimestamp()
+        timestamp: serverTimestamp(),
       });
 
       setNewMessage("");
@@ -140,7 +140,7 @@ function Chat() {
                     className="btn btn-secondary btn-sm"
                     onClick={() => navigate("/all-users")}
                   >
-                    Back
+                    Enrere
                   </button>
                 </div>
 
@@ -211,7 +211,7 @@ function Chat() {
                   <input
                     type="text"
                     className="form-control form-control-lg"
-                    placeholder="Type message"
+                    placeholder="Escriu el teu missatge"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => {
@@ -219,7 +219,7 @@ function Chat() {
                     }}
                   />
                   <button className="btn btn-primary ms-3" onClick={sendMessage}>
-                    Send
+                    Enviar
                   </button>
                 </div>
               </div>

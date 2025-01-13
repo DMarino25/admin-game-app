@@ -234,11 +234,12 @@ function Home() {
   }, []);
 
   useEffect(() => {
-          setCurrentPage(1);
- }, [searchTerm]);
-  const filteredUsers = usersList.filter((user) =>
+    setCurrentPage(1);
+  }, [searchTerm]);
+  
+ const filteredUsers = usersList.filter((user) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  );
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;

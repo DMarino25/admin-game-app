@@ -27,41 +27,41 @@ function Feedback() {
       };
 
     const listUsers = async() =>{
-    try{
-        const feedback= collection(db, 'feedbacks');
-        const querySnapshot = await getDocs(feedback);
+        try{
+            const feedback= collection(db, 'feedbacks');
+            const querySnapshot = await getDocs(feedback);
 
-        const userFeedbackMap ={};
-        for (const feedbackDoc of querySnapshot.docs){
-            const feedbackData = feedbackDoc.data();
-            const userId = feedbackData.userId;
+            const userFeedbackMap ={};
+            for (const feedbackDoc of querySnapshot.docs){
+                const feedbackData = feedbackDoc.data();
+                const userId = feedbackData.userId;
 
-            if (!userFeedbackMap[userId]){
-                userFeedbackMap[userId] = {
-                    userId,
-                    feedbacks:[],
-                };
+                if (!userFeedbackMap[userId]){
+                    userFeedbackMap[userId] = {
+                        userId,
+                        feedbacks:[],
+                    };
+                }
+                userFeedbackMap[userId].feedbacks.push({id:feedbackDoc.id, comment: feedbackData.comment || "Sense comentari", report:feedbackData.report || "Sense report"});
             }
-            userFeedbackMap[userId].feedbacks.push({id:feedbackDoc.id, comment: feedbackData.comment || "Sense comentari", report:feedbackData.report || "Sense report"});
-        }
-        const userIds = Object.keys(userFeedbackMap);
-        for (const uid of userIds){
-            const userDocRef = doc(db,'users',uid);
-            const userSnap = await getDoc(userDocRef);
+            const userIds = Object.keys(userFeedbackMap);
+            for (const uid of userIds){
+                const userDocRef = doc(db,'users',uid);
+                const userSnap = await getDoc(userDocRef);
 
-            let userName = 'Usuari no trobat'
-            if (userSnap.exists()){
-                userName = userSnap.data().name || userName;
+                let userName = 'Usuari no trobat'
+                if (userSnap.exists()){
+                    userName = userSnap.data().name || userName;
+                }
+                userFeedbackMap[uid].name = userName;
             }
-            userFeedbackMap[uid].name = userName;
+            const feedbackByUserArray = Object.values(userFeedbackMap);
+            setUsers(feedbackByUserArray);
         }
-        const feedbackByUserArray = Object.values(userFeedbackMap);
-        setUsers(feedbackByUserArray);
-    }
         catch(error){
             console.error("Error al obtenir el feedback", error);
         }
-        }
+    }
 
 
     useEffect(() => {
@@ -75,8 +75,9 @@ function Feedback() {
         document.body.style.padding = '';
     };
     }, []);
+
     useEffect(() => {
-    listUsers();
+        listUsers();
     }, []);
 
     useEffect(() => {

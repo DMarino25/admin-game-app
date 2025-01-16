@@ -235,10 +235,29 @@ function Home() {
   }, []);
 
   useEffect(() =>{
-    const interval = setInterval(() =>{
+    const interval = setInterval(async() =>{
       const now = Date.now();
-      setUsers((prevUsers)=>
-        prevUsers.map((user)=>{
+      setUsers((prevUsers)=>{
+        prevUsers.forEach(async(user)=>{
+          const userRef = doc(db,'users',user.id);
+          const updatedUser = {...user};
+          if (user.noGamesEndTime && now > user.noGamesEndTime){
+            updatedUser.noGames = false;
+            updatedUser.noGamesEndTime= null;
+            await updateDoc(userRef, { noGames: false, noGamesEndTime: null });
+          }
+          if (user.noFavEndTime && now > user.noFavEndTime){
+            updatedUser.noFav = false;
+            updatedUser.noFavEndTime= null;
+            await updateDoc(userRef, { noFav: false, noFavEndTime: null });
+          }
+          if (user.noForEndTime && now > user.noForEndTime){
+            updatedUser.noFor = false;
+            updatedUser.noForEndTime= null;
+            await updateDoc(userRef, { noFor: false, noForEndTime: null });
+          }
+        });
+        return prevUsers.map ((user)=>{
           const updatedUser = {...user};
           if (user.noGamesEndTime && now > user.noGamesEndTime){
             updatedUser.noGames = false;
@@ -253,8 +272,8 @@ function Home() {
             updatedUser.noForEndTime= null;
           }
           return updatedUser;
-        })
-      );
+        });
+    });
     },1000);
     return () => clearInterval(interval);
   },[]);

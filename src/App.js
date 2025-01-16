@@ -19,6 +19,7 @@ import Feedback from './Feedbacks'
 
 function App() {
  
+  
   /*useEffect(() =>{
     const interval = setInterval(() =>{
       window.location.reload();

@@ -9,7 +9,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { setUserData } = useUser(); // Access the context to set user data
+  const { setUserData } = useUser(); 
 
   const handleLogin = async () => {
     setError(null);
@@ -23,7 +23,7 @@ function Login() {
         const userData = querySnapshot.docs[0].data();
         if (userData.role === 'admin' && password === 'admin') {
           console.log("userData:" + userData.uid)
-          setUserData(userData.uid); // Set user data in the context
+          setUserData(userData.uid); 
           navigate('/all-users');
         } else {
           setError('Incorrect password or role');

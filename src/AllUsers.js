@@ -4,6 +4,7 @@ import { getFirestore, collection, getDocs, doc, getDoc, addDoc, deleteDoc, upda
 import { getAuth } from 'firebase/auth';
 import { app } from './firebase';
 import { useUser } from './UserContext';
+import { onSnapshot } from 'firebase/firestore';
 
 function Home() {
   const db = getFirestore(app);
@@ -207,15 +208,14 @@ function Home() {
     }
   };
 
-  const listUsers = async () => {
-    try {
+  const listUsers = () => {
+   
       const users = collection(db, 'users');
-      const querySnapshot = await getDocs(users);
+      const unsubscribe = onSnapshot(users, (querySnapshot) =>{
       const usersList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setUsers(usersList);
-    } catch (error) {
-      console.error("Error al obtenir els usuaris", error);
-    }
+    }); 
+    return unsubscribe;
   };
 
   useEffect(() => {
@@ -230,8 +230,34 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    listUsers();
+    const unsubscribe = listUsers();
+    return () => unsubscribe();
   }, []);
+
+  useEffect(() =>{
+    const interval = setInterval(() =>{
+      const now = Date.now();
+      setUsers((prevUsers)=>
+        prevUsers.map((user)=>{
+          const updatedUser = {...user};
+          if (user.noGamesEndTime && now > user.noGamesEndTime){
+            updatedUser.noGames = false;
+            updatedUser.noGamesEndTime= null;
+          }
+          if (user.noFavEndTime && now > user.noFavEndTime){
+            updatedUser.noFav = false;
+            updatedUser.noFavEndTime= null;
+          }
+          if (user.noForEndTime && now > user.noForEndTime){
+            updatedUser.noFor = false;
+            updatedUser.noForEndTime= null;
+          }
+          return updatedUser;
+        })
+      );
+    },1000);
+    return () => clearInterval(interval);
+  },[]);
 
   useEffect(() => {
     setCurrentPage(1);

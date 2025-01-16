@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { getFirestore, collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { getFirestore, collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, orderBy} from 'firebase/firestore';
 import { app } from './firebase'; 
 import { FaUser, FaCommentDots } from 'react-icons/fa';
 import './App.css';
@@ -12,96 +12,90 @@ function ReportMessages() {
   const db = getFirestore(app);
   const [reportsList, setReportsList] = useState([]);
 
-  const listReports = useCallback(async () => {
-    try {
-      const reports = collection(db, 'reports');
-      const querySnapshot = await getDocs(query(reports, where("solved", "==", false)));
-      const reportsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  useEffect(() => {
+    const unsubscribe = onSnapshot(query(collection(db, 'reports'), where("solved", "==", false),orderBy("reportDate","desc")), async (querySnapshot) => {
+      try {
+        const reportsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      const uniqueReports = reportsData.reduce((acc, report) => {
-        const key = report.replyId 
-          ? `${report.replyId}-${report.commentId}` 
-          : `${report.commentId}-null`; 
-        if (!acc[key]) acc[key] = report;
-        return acc;
-      }, {});
+        const uniqueReports = reportsData.reduce((acc, report) => {
+          const key = report.replyId 
+            ? `${report.replyId}-${report.commentId}` 
+            : `${report.commentId}-null`; 
+          if (!acc[key]) acc[key] = report;
+          return acc;
+        }, {});
 
-      const infoReport = await Promise.all(
-        Object.values(uniqueReports).map(async report => {
-          const reporterRef = doc(db, 'users', report.reporterId);
-          const reporterSnap = await getDoc(reporterRef);
-          const reporterName = reporterSnap.exists() ? reporterSnap.data().name : 'Usuari no trobat';
+        const infoReport = await Promise.all(
+          Object.values(uniqueReports).map(async report => {
+            const reporterRef = doc(db, 'users', report.reporterId);
+            const reporterSnap = await getDoc(reporterRef);
+            const reporterName = reporterSnap.exists() ? reporterSnap.data().name : 'Usuari no trobat';
 
-          const userRef = doc(db, 'users', report.userId);
-          const userSnap = await getDoc(userRef);
-          const userName = userSnap.exists() ? userSnap.data().name : 'Usuari no trobat';
+            const userRef = doc(db, 'users', report.userId);
+            const userSnap = await getDoc(userRef);
+            const userName = userSnap.exists() ? userSnap.data().name : 'Usuari no trobat';
 
-          let textContent = 'Missatge no trobat';
-          let originalCommentText = '';
-          const forums = collection(db, 'forums');
-          const forumSnapshot = await getDocs(forums);
+            let textContent = 'Missatge no trobat';
+            let originalCommentText = '';
+            const forums = collection(db, 'forums');
+            const forumSnapshot = await getDocs(forums);
 
-          for (const forum of forumSnapshot.docs) {
-            const commentsCollection = collection(forum.ref, 'comments');
-            if (report.replyId) {
-              const commentRef = doc(commentsCollection, report.commentId);
-              const commentSnap = await getDoc(commentRef);
-              if (commentSnap.exists()) {
-                originalCommentText = commentSnap.data().commentText || 'Comentari original no disponible';
-              }
+            for (const forum of forumSnapshot.docs) {
+              const commentsCollection = collection(forum.ref, 'comments');
+              if (report.replyId) {
+                const commentRef = doc(commentsCollection, report.commentId);
+                const commentSnap = await getDoc(commentRef);
+                if (commentSnap.exists()) {
+                  originalCommentText = commentSnap.data().commentText || 'Comentari original no disponible';
+                }
 
-              const replyRef = doc(commentsCollection, report.commentId, 'replies', report.replyId);
-              const replySnap = await getDoc(replyRef);
-              if (replySnap.exists()) {
-                textContent = replySnap.data().replyText || 'Contingut de resposta no disponible';
-                break;
-              }
-            } else {
-              const commentRef = doc(commentsCollection, report.commentId);
-              const commentSnap = await getDoc(commentRef);
-              if (commentSnap.exists()) {
-                textContent = commentSnap.data().commentText || 'Contingut no disponible';
-                break;
+                const replyRef = doc(commentsCollection, report.commentId, 'replies', report.replyId);
+                const replySnap = await getDoc(replyRef);
+                if (replySnap.exists()) {
+                  textContent = replySnap.data().replyText || 'Contingut de resposta no disponible';
+                  break;
+                }
+              } else {
+                const commentRef = doc(commentsCollection, report.commentId);
+                const commentSnap = await getDoc(commentRef);
+                if (commentSnap.exists()) {
+                  textContent = commentSnap.data().commentText || 'Contingut no disponible';
+                  break;
+                }
               }
             }
-          }
 
-          return {
-            ...report,
-            reporterName,
-            userName,
-            textContent,
-            originalCommentText,
-          };
-        })
-      );
-      setReportsList(infoReport);
-    } catch (error) {
-      console.error('Error fetching reports:', error);
-    }
-  }, [db]); // Include db as a dependency if necessary (optional based on how db is defined)
+            return {
+              ...report,
+              reporterName,
+              userName,
+              textContent,
+              originalCommentText,
+            };
+          })
+        );
+        setReportsList(infoReport);
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+      }
+    });
 
-  useEffect(() => {
-    listReports();
-  }, [listReports]); // Now this won't trigger unnecessary reruns
+    return () => unsubscribe();
+  }, [db]);
 
   const handleAccept = async (report) => {
     try {
-      // Update the user's reportedCount
       const userRef = doc(db, 'users', report.userId);
       const userSnap = await getDoc(userRef);
       const userData = userSnap.data();
       let reportedCount = userData?.reportedCount || 0;
       reportedCount += 1;
-  
-      // If reportedCount reaches 5, check if the user is already banned
+
       if (reportedCount >= 5) {
-        // Check if the user is already in the bannedUsers collection
         const bannedUserRef = collection(db, 'bannedUsers');
         const bannedQuery = query(bannedUserRef, where("userId", "==", report.userId));
         const bannedSnapshot = await getDocs(bannedQuery);
-  
-        // If the user is not already banned, add them to the bannedUsers collection
+
         if (bannedSnapshot.empty) {
           await addDoc(bannedUserRef, {
             email: userData.email,
@@ -113,29 +107,24 @@ function ReportMessages() {
           console.log('User is already banned');
         }
       }
-  
-      // Update the user's reportedCount field
+
       await updateDoc(userRef, { reportedCount });
-  
-      // Update the report to mark it as solved
+
       const reportRef = doc(db, 'reports', report.id);
       await updateDoc(reportRef, { solved: true });
-  
-      // Update the UI by filtering out solved reports
+
       setReportsList(prevReports => prevReports.filter(item => item.id !== report.id));
-  
+
     } catch (error) {
       console.error('Error handling accept:', error);
     }
   };
-  
+
   const handleReject = async (report) => {
     try {
-      // Delete the report from the reports collection
       const reportRef = doc(db, 'reports', report.id);
       await deleteDoc(reportRef);
 
-      // Update the UI
       setReportsList(prevReports => prevReports.filter(item => item.id !== report.id));
     } catch (error) {
       console.error('Error handling reject:', error);
@@ -174,7 +163,6 @@ function ReportMessages() {
                   <FaUser className="me-2" />
                   <strong>Usuari Missatge:</strong> {report.userName}
                 </p>
-                {/* If it's a reply, display the original comment text */}
                 {report.originalCommentText && (
                   <p className="bg-info p-2 rounded ms-3 mt-2">
                     <strong>Comentari Original:</strong> {report.originalCommentText}
@@ -209,7 +197,6 @@ function ReportMessages() {
                           {index + 1}
                       </span>
                   </li>
-              
               ))}
           </ul>
       </nav>

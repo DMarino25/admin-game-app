@@ -41,8 +41,8 @@ function Chat() {
         const currentUserDoc = await getDoc(doc(db, "users", userId));
         const peerUserDoc = await getDoc(doc(db, "users", peerUserId));
 
-        setCurrentUserPhotoUrl(currentUserDoc.data()?.photoUrl || "default-current-avatar-url");
-        setPeerUserPhotoUrl(peerUserDoc.data()?.photoUrl || "default-peer-avatar-url");
+        setCurrentUserPhotoUrl(currentUserDoc.data()?.photoUrl || "");
+        setPeerUserPhotoUrl(peerUserDoc.data()?.photoUrl || "");
         setPeerUserName(peerUserDoc.data()?.name || "Usuari eliminat");
       } catch (error) {
         console.error("Error fetching user details:", error);
@@ -166,7 +166,7 @@ function Chat() {
                       {msg.senderId !== userId && (
                         <img
                           src={peerUserPhotoUrl}
-                          alt="Peer Avatar"
+                          alt=""
                           style={{
                             width: "45px",
                             height: "45px",
@@ -176,7 +176,7 @@ function Chat() {
                       )}
                       <div>
                         <p
-                          className={`small p-2 ${
+                          className={`small p-2 message-bubble ${
                             msg.senderId === userId
                               ? "me-3 text-white rounded-3 bg-primary"
                               : "ms-3 rounded-3 bg-body-tertiary"
@@ -195,7 +195,7 @@ function Chat() {
                       {msg.senderId === userId && (
                         <img
                           src={currentUserPhotoUrl}
-                          alt="Your Avatar"
+                          alt=""
                           style={{
                             width: "45px",
                             height: "45px",

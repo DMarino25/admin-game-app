@@ -277,6 +277,44 @@ function Home() {
     },1000);
     return () => clearInterval(interval);
   },[]);
+  useEffect(() =>{
+    if(expandedUser2){
+          const userRef = doc(db,'users',expandedUser2);
+          const unsubscribeInfo = onSnapshot(userRef, (docSnap) =>{
+          if (docSnap.exists()){
+            const userData = docSnap.data();
+            setUserInfo((prevInfo)=>({
+              ...prevInfo,
+              [expandedUser2]:{
+                email: userData.email || 'Correu no trobat',
+                photoUrl: userData.photoUrl || '',
+                gameFav: userData.gameFav || 'Joc més jugat no trobat',
+                gameFavImg: userData.gameFavImg || '',
+                description: userData.description || 'Descripció no trobada',
+              },
+            }))
+          }
+        });
+
+    return () => unsubscribeInfo();
+      }
+  },[expandedUser2]);
+  useEffect(() =>{
+    if(expandedUser3){
+          const favRef = collection(db,'users',expandedUser3, 'favorits');
+          const unsubscribeFavs = onSnapshot(favRef, (querySnapshot) =>{
+            const favData = querySnapshot.docs.map((doc) => doc.data().title);
+            setFavorites((prevFavorites)=>({
+              ...prevFavorites,
+              [expandedUser3]:favData,
+               
+            }));
+          
+        });
+
+    return () => unsubscribeFavs();
+      }
+  },[expandedUser3]);
 
   useEffect(() => {
     setCurrentPage(1);

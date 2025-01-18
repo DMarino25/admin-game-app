@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import "bootstrap/dist/css/bootstrap.min.css";
 import './styles/styles.css';
-import { getFirestore, collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, onSnapshot, doc, deleteDoc, query, orderBy, where, getDocs, setDoc, getDoc,addDoc } from 'firebase/firestore';
 import { app } from './firebase'; 
 
 function BannedUsers() {
@@ -11,16 +11,35 @@ function BannedUsers() {
   const [currentPage, setCurrentPage] = useState(1); 
   const itemsPerPage = 5;
 
-  const handlePerma = async (userId) => {
+  /*const handlePerma = async (userId) => {
     try {
       const bannedRef = doc(db, 'bannedUsers', userId);
+      const userSnapshot = await getDoc(bannedRef);
+      if(userSnapshot.exists){
+        const bannedUserData = userSnapshot.data();
+    
+            await addDoc(collection(db, 'users'),{
+              uid: bannedUserData.userId,
+              name: bannedUserData.name || null,
+              email: bannedUserData.email || null,
+              photoUrl: bannedUserData.photoUrl || null,
+              noGames: false,
+              noFav: false,
+              noFor: false,
+            });
+          
+     
       await deleteDoc(bannedRef);
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-    } catch (error) {
-      console.error("Error desbloquejant l'usuari:", error);
+        } 
     }
-  };
+    catch (error) {
+        console.error("Error desbloquejant l'usuari:", error);
+      }
+  };*/
 
+
+ 
   useEffect(() => {
     const bannedUsersQuery = query(
       collection(db, 'bannedUsers'),
@@ -67,18 +86,16 @@ function BannedUsers() {
         {currentUsers.map((user) => (
           <li
             key={user.id}
-            className="list-group-item d-flex justify-content-between align-items-center"
+            className="list-group-item"
           >
-            <span>{user.name}</span>
-            <div className="d-plex">
-              <button
-                id="unban"
-                className="btn btn-primary ms-auto"
-                onClick={() => handlePerma(user.id)}
-              >
-                Desbloquejar
-              </button>
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <p className="mb-1 fw-bold">{user.name}</p>
+                <p className="mb-0 text-secondary">{user.email}</p>
             </div>
+            
+            </div>
+            
           </li>
         ))}
       </ul>

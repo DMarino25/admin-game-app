@@ -189,6 +189,18 @@ function Home() {
   const handlePerma = async (userId) => {
     try {
       const userRef = doc(db, 'users', userId);
+      const deleteSubcollections = async (parentDocRef) => {
+        const subcollectionNames = ['favorits']; 
+        for (const subcollectionName of subcollectionNames) {
+          const subcollectionRef = collection(parentDocRef, subcollectionName);
+          const subcollectionDocs = await getDocs(subcollectionRef);
+  
+          for (const docSnap of subcollectionDocs.docs) {
+            await deleteDoc(docSnap.ref);
+          }
+        }
+      };
+      await deleteSubcollections(userRef);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {

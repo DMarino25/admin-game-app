@@ -11,33 +11,7 @@ function BannedUsers() {
   const [currentPage, setCurrentPage] = useState(1); 
   const itemsPerPage = 5;
 
-  /*const handlePerma = async (userId) => {
-    try {
-      const bannedRef = doc(db, 'bannedUsers', userId);
-      const userSnapshot = await getDoc(bannedRef);
-      if(userSnapshot.exists){
-        const bannedUserData = userSnapshot.data();
-    
-            await addDoc(collection(db, 'users'),{
-              uid: bannedUserData.userId,
-              name: bannedUserData.name || null,
-              email: bannedUserData.email || null,
-              photoUrl: bannedUserData.photoUrl || null,
-              noGames: false,
-              noFav: false,
-              noFor: false,
-            });
-          
-     
-      await deleteDoc(bannedRef);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-        } 
-    }
-    catch (error) {
-        console.error("Error desbloquejant l'usuari:", error);
-      }
-  };*/
-
+  
 
  
   useEffect(() => {
@@ -57,7 +31,7 @@ function BannedUsers() {
       }
     );
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe(); 
   }, [db]);
 
   useEffect(() => {

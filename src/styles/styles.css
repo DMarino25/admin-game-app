@@ -175,9 +175,8 @@
 }
 
 .message-bubble {
-    max-width: 100%;
     word-wrap: break-word; /* Ensures long words wrap to the next line */
     overflow-wrap: break-word; /* Compatibility for breaking long words */
-    max-width: 500px;
+    max-width: 400px;
 }
   
